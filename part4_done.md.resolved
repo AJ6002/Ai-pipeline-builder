@@ -1,0 +1,35 @@
+# Part 4 — Backend + Submit ✅
+
+## Backend ([main.py](file:///c:/Users/aksha/Downloads/drive-download-20260227T181945Z-1-001/backend/main.py))
+
+| Feature | Implementation |
+|---------|---------------|
+| Endpoint | `POST /pipelines/parse` — accepts JSON body |
+| Models | Pydantic [PipelineRequest](file:///c:/Users/aksha/Downloads/drive-download-20260227T181945Z-1-001/backend/main.py#38-41) / [PipelineResponse](file:///c:/Users/aksha/Downloads/drive-download-20260227T181945Z-1-001/backend/main.py#42-47) for type safety |
+| CORS | Allows `http://localhost:3000` (React dev server) |
+| Node count | `len(pipeline.nodes)` |
+| Edge count | `len(pipeline.edges)` |
+| DAG detection | Kahn's algorithm (BFS topological sort) — O(V+E) |
+| Edge guard | Skips edges referencing undefined nodes |
+| Message | `"✅ Valid pipeline…"` or `"❌ Cycle detected…"` |
+
+## Frontend ([submit.js](file:///c:/Users/aksha/Downloads/drive-download-20260227T181945Z-1-001/frontend/src/submit.js))
+
+| Feature | Implementation |
+|---------|---------------|
+| Data source | Reads `nodes` + `edges` directly from Zustand store |
+| Loading state | Button disabled, shows `⟳ Analyzing…` spinner text |
+| Success | Modal with node/edge counts and colored DAG status |
+| Error | Auto-dismissing toast (4s) when backend unreachable |
+| Live counter | Footer shows `4 nodes · 3 edges` in real time |
+
+## Backend Test Command
+```bash
+curl -X POST http://localhost:8000/pipelines/parse \
+  -H "Content-Type: application/json" \
+  -d '{"nodes":[{"id":"1"},{"id":"2"}],"edges":[{"source":"1","target":"2"}]}'
+# → {"num_nodes":2,"num_edges":1,"is_dag":true,"message":"✅ Valid pipeline — no cycles detected."}
+```
+
+---
+*All 4 parts complete. Ready for final verification.*

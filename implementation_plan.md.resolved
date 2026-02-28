@@ -1,0 +1,178 @@
+# VectorShift Frontend Assessment — Implementation Plan
+
+## Goal
+Build a production-quality, scalable pipeline builder that scores in the **top 10%** of submissions — with clean architecture, polished UI, robust backend logic, and smart UX. Every design decision is intentional and defensible.
+
+---
+
+## Architecture Strategy
+
+### Folder Structure (NEW)
+```
+frontend/src/
+├── nodes/
+│   ├── BaseNode.js         ← [NEW] All nodes extend this
+│   ├── inputNode.js        ← [MODIFY] use BaseNode
+│   ├── outputNode.js       ← [MODIFY] use BaseNode
+│   ├── llmNode.js          ← [MODIFY] use BaseNode
+│   ├── textNode.js         ← [MODIFY] dynamic handles + auto-resize
+│   ├── filterNode.js       ← [NEW]
+│   ├── apiNode.js          ← [NEW]
+│   ├── noteNode.js         ← [NEW]
+│   ├── transformNode.js    ← [NEW]
+│   └── mathNode.js         ← [NEW]
+├── hooks/
+│   └── useNodeData.js      ← [NEW] shared node state hook
+├── utils/
+│   └── parseVariables.js   ← [NEW] {{var}} extraction logic
+├── store.js                ← [MODIFY] minor cleanup
+├── toolbar.js              ← [MODIFY] add 5 new node entries
+├── submit.js               ← [MODIFY] wired to backend
+├── ui.js                   ← [MODIFY] register new nodeTypes
+└── App.js                  ← minimal changes
+
+backend/
+└── main.py                 ← [MODIFY] full pipeline analysis
+```
+
+---
+
+## Part 1 — BaseNode Abstraction
+
+### [NEW] `frontend/src/nodes/BaseNode.js`
+A single reusable shell that ALL nodes use. Accepts props:
+- `title` — node label (e.g. "Input", "LLM")
+- `type` — used for color-coding
+- `inputs` — array of `{ id, label }` for left-side handles
+- `outputs` — array of `{ id, label }` for right-side handles  
+- `children` — internal content (fields, dropdowns, etc.)
+- `width`, `minHeight` — sizing
+
+This makes adding a new node type a **5-line file** instead of 40 lines. Evaluators will immediately see scalability.
+
+### [NEW] `frontend/src/hooks/useNodeData.js`
+Custom hook that wraps `useStore`'s [updateNodeField](file:///c:/Users/aksha/Downloads/drive-download-20260227T181945Z-1-001/frontend/src/store.js#43-54) so each node can call `useNodeData(id)` to get and set its own fields cleanly — no direct store coupling inside nodes.
+
+---
+
+## Part 2 — Dynamic Text Node
+
+### [MODIFY] [frontend/src/nodes/textNode.js](file:///c:/Users/aksha/Downloads/drive-download-20260227T181945Z-1-001/frontend/src/nodes/textNode.js)
+- **Variable parsing**: extract all `{{varName}}` patterns using regex via `parseVariables.js` util
+- **Dynamic handles**: for each unique variable found, render a `Handle type="target"` on the left at evenly distributed vertical positions
+- **Auto-resize textarea**: use a `useEffect` that sets `textarea.style.height = textarea.scrollHeight + 'px'` on every content change
+- **Deduplication**: `[...new Set(vars)]` — duplicate variable names share one handle
+- **Live update**: handles appear/disappear in real-time as the user types
+
+### [NEW] `frontend/src/utils/parseVariables.js`
+```js
+export const parseVariables = (text) => {
+  const regex = /\{\{([a-zA-Z_][a-zA-Z0-9_]*)\}\}/g;
+  const vars = [];
+  let match;
+  while ((match = regex.exec(text)) !== null) vars.push(match[1]);
+  return [...new Set(vars)];
+};
+```
+Isolated, testable, reusable — shows clean utility thinking.
+
+---
+
+## Part 3 — 5 New Node Types (all use BaseNode)
+
+| Node | Inputs | Outputs | Fields |
+|------|--------|---------|--------|
+| **Filter** | `data` | `pass`, `fail` | condition dropdown (contains / equals / not empty) |
+| **API Call** | `url`, `body` | `response`, `error` | method dropdown (GET/POST/PUT), headers textarea |
+| **Note** | — | — | large textarea for comments (no handles) |
+| **Transform** | `input` | `output` | code textarea with JS expression |
+| **Math** | `a`, `b` | `result` | operation dropdown (+, -, ×, ÷, mod) |
+
+Each is ~20-30 lines, reusing BaseNode. Clean, consistent, scalable.
+
+### [MODIFY] [frontend/src/toolbar.js](file:///c:/Users/aksha/Downloads/drive-download-20260227T181945Z-1-001/frontend/src/toolbar.js)
+Add all 5 new node entries to the draggable toolbar with icons.
+
+### [MODIFY] [frontend/src/ui.js](file:///c:/Users/aksha/Downloads/drive-download-20260227T181945Z-1-001/frontend/src/ui.js)
+Register all 5 new types in the `nodeTypes` map.
+
+---
+
+## Part 4 — Backend + Submit
+
+### [MODIFY] [backend/main.py](file:///c:/Users/aksha/Downloads/drive-download-20260227T181945Z-1-001/backend/main.py)
+
+Fix endpoint to `POST` (Form data doesn't work with GET for body):
+```python
+@app.post('/pipelines/parse')
+def parse_pipeline(pipeline: dict):
+    nodes = pipeline.get('nodes', [])
+    edges = pipeline.get('edges', [])
+    num_nodes = len(nodes)
+    num_edges = len(edges)
+    is_dag = check_is_dag(nodes, edges)
+    return {'num_nodes': num_nodes, 'num_edges': num_edges, 'is_dag': is_dag}
+```
+
+**DAG detection** using iterative topological sort (Kahn's algorithm):
+- Build adjacency list and in-degree map
+- BFS-process nodes with in-degree 0
+- If all nodes processed → DAG; else → cycle exists
+
+Add CORS middleware so React frontend can call it.
+
+### [MODIFY] [frontend/src/submit.js](file:///c:/Users/aksha/Downloads/drive-download-20260227T181945Z-1-001/frontend/src/submit.js)
+- Read `nodes` + `edges` from zustand store
+- POST to `http://localhost:8000/pipelines/parse` as JSON
+- Show result in a styled modal/alert:
+  > ✅ Nodes: 4 | Edges: 3 | Is DAG: Yes
+
+---
+
+## UI Design System
+
+### Color coding by node type
+| Type | Accent Color |
+|------|-------------|
+| Input | `#6366f1` (indigo) |
+| Output | `#10b981` (emerald) |
+| LLM | `#f59e0b` (amber) |
+| Text | `#3b82f6` (blue) |
+| Filter | `#ef4444` (red) |
+| API | `#8b5cf6` (violet) |
+| Note | `#6b7280` (gray) |
+| Transform | `#06b6d4` (cyan) |
+| Math | `#ec4899` (pink) |
+
+### BaseNode visual style
+- Rounded corners (`border-radius: 12px`)
+- Colored top header bar per type
+- Drop shadow + subtle glassmorphism
+- Smooth hover effect
+- Clean typography (Inter font)
+
+---
+
+## Verification Plan
+
+### Manual Testing (Browser)
+1. Run backend: `cd backend && uvicorn main:app --reload` (port 8000)
+2. Run frontend: `cd frontend && npm start` (port 3000)
+3. Drag multiple nodes onto canvas → verify they render with correct styling
+4. Type `Hello {{name}}, age is {{age}}` in TextNode → verify 2 input handles appear live
+5. Connect nodes with edges
+6. Click Submit → verify alert shows correct node count, edge count, and DAG=true
+7. Create a cycle (A→B→C→A if possible via UI) → verify DAG=false
+8. Add all 5 new node types → verify they drag, drop, and connect correctly
+
+### Backend Unit Check
+- Run: `curl -X POST http://localhost:8000/pipelines/parse -H "Content-Type: application/json" -d '{"nodes":[{"id":"1"},{"id":"2"}],"edges":[{"source":"1","target":"2"}]}'`
+- Expected: `{"num_nodes": 2, "num_edges": 1, "is_dag": true}`
+
+---
+
+> [!IMPORTANT]
+> The BaseNode abstraction is the single most important architectural decision. Every evaluator criterion — scalability, reuse, clean props, readability — is answered by it. Everything else builds on top.
+
+> [!NOTE]
+> No external UI libraries (MUI, Ant Design) will be used. All styling is custom CSS-in-JS for maximum control and to show design skill directly.

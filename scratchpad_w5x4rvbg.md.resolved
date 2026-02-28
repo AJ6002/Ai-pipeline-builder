@@ -1,0 +1,27 @@
+# End-to-End Test Checklist
+
+- [x] Open http://localhost:3000
+- [x] Drag nodes to canvas:
+    - [x] Input node
+    - [x] Text node
+    - [x] LLM node
+    - [x] Output node
+- [x] Connect nodes:
+    - [x] Input -> Text
+    - [x] Text -> LLM
+    - [x] LLM -> Output
+- [x] Take screenshot of connected pipeline
+- [x] Click "▶ Run Pipeline"
+- [x] Verify modal results
+- [x] Take screenshot of results
+
+## Final Analysis Results
+- **Nodes**: 4
+- **Edges**: 3
+- **Is DAG**: Yes
+- **Message**: ✅ Valid pipeline — no cycles detected.
+
+## Observations
+- Connecting Text node required defining a variable `{{input}}` to create the target handle.
+- The pipeline was successfully validated by the FastAPI backend.
+- UI correctly reflects the state (node counts and edge counts).

@@ -1,0 +1,30 @@
+# Part 2 — Dynamic Text Node ✅
+
+## What Was Built
+
+**File:** [nodes/textNode.js](file:///c:/Users/aksha/Downloads/drive-download-20260227T181945Z-1-001/frontend/src/nodes/textNode.js)
+
+### Features
+| Feature | Implementation |
+|---------|---------------|
+| Live `{{variable}}` parsing | `useEffect` on text → [parseVariables()](file:///c:/Users/aksha/Downloads/drive-download-20260227T181945Z-1-001/frontend/src/utils/parseVariables.js#15-37) → updates `variables` state |
+| Dynamic input handles | One `Handle type="target"` per unique variable, evenly spaced vertically |
+| Auto-resize textarea | `useEffect` resets height to `auto` then sets to `scrollHeight` on every change |
+| Deduplication | Handled inside [parseVariables](file:///c:/Users/aksha/Downloads/drive-download-20260227T181945Z-1-001/frontend/src/utils/parseVariables.js#15-37) with `Set` — same name = one handle |
+| Defensive parsing | `{{123bad}}` silently ignored — regex enforces valid JS identifiers only |
+| Variable count badge | Header shows `2 vars` badge when variables exist |
+| Inline handle labels | Shows `← {{name}}` inside node body for each handle |
+| Contextual hint | "Tip: type `{{name}}` …" shown when no variables exist yet |
+| Selection glow | Blue glow matching node accent on select |
+
+### Behaviour Example
+User types:
+```
+Hello {{name}}, your score is {{score}}
+```
+→ 2 input handles appear on the left (`name`, `score`)
+→ Badge shows "2 vars"
+→ Textarea grows to fit content
+
+---
+*Part 3 — 5 New Node Types is next.*

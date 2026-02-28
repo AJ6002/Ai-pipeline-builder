@@ -1,0 +1,33 @@
+# Part 1 — Architecture Foundation ✅
+
+## What Was Built
+
+| File | Purpose |
+|------|---------|
+| [nodes/nodeConfigs.js](file:///c:/Users/aksha/Downloads/drive-download-20260227T181945Z-1-001/frontend/src/nodes/nodeConfigs.js) | Central config for all 8 node types (title, color, inputs, outputs, fields) |
+| [nodes/BaseNode.js](file:///c:/Users/aksha/Downloads/drive-download-20260227T181945Z-1-001/frontend/src/nodes/BaseNode.js) | Universal visual shell — handles hover/selection glow, glassmorphism, dynamic handle layout |
+| [nodes/NodeFactory.js](file:///c:/Users/aksha/Downloads/drive-download-20260227T181945Z-1-001/frontend/src/nodes/NodeFactory.js) | Renders any node purely from its config object. Generic field rendering (text/select/textarea) |
+| [hooks/useNodeData.js](file:///c:/Users/aksha/Downloads/drive-download-20260227T181945Z-1-001/frontend/src/hooks/useNodeData.js) | Thin hook to write node field state cleanly, decoupled from Zustand internals |
+| [utils/parseVariables.js](file:///c:/Users/aksha/Downloads/drive-download-20260227T181945Z-1-001/frontend/src/utils/parseVariables.js) | Extracts `{{var}}` with full defensive validation (invalid identifiers silently ignored) |
+| [nodes/inputNode.js](file:///c:/Users/aksha/Downloads/drive-download-20260227T181945Z-1-001/frontend/src/nodes/inputNode.js) | Refactored → 5 lines |
+| [nodes/outputNode.js](file:///c:/Users/aksha/Downloads/drive-download-20260227T181945Z-1-001/frontend/src/nodes/outputNode.js) | Refactored → 5 lines |
+| [nodes/llmNode.js](file:///c:/Users/aksha/Downloads/drive-download-20260227T181945Z-1-001/frontend/src/nodes/llmNode.js) | Refactored → 5 lines |
+
+## Key Architectural Decision
+
+> **Adding any new node now requires:** one config entry in [nodeConfigs.js](file:///c:/Users/aksha/Downloads/drive-download-20260227T181945Z-1-001/frontend/src/nodes/nodeConfigs.js) + one 5-line file. Zero component code.
+
+## Code Structure
+
+```
+nodeConfigs.js   ← data source of truth
+     ↓
+NodeFactory.js  ← renders config into UI
+     ↓
+BaseNode.js     ← visual shell (handles, color, glow)
+```
+
+[parseVariables.js](file:///c:/Users/aksha/Downloads/drive-download-20260227T181945Z-1-001/frontend/src/utils/parseVariables.js) and [useNodeData.js](file:///c:/Users/aksha/Downloads/drive-download-20260227T181945Z-1-001/frontend/src/hooks/useNodeData.js) are standalone utilities used by the TextNode (Part 2) and all nodes respectively.
+
+---
+*Part 2 — Dynamic Text Node is next.*

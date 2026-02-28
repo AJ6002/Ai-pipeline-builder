@@ -1,0 +1,27 @@
+# Part 3 — 5 New Node Types ✅
+
+## What Was Built
+
+### New Node Files (all ~7 lines each)
+| File | Config Key | Inputs | Outputs | Fields |
+|------|-----------|--------|---------|--------|
+| [filterNode.js](file:///c:/Users/aksha/Downloads/drive-download-20260227T181945Z-1-001/frontend/src/nodes/filterNode.js) | `filter` | `data` | `pass`, `fail` | condition select, value text |
+| [apiNode.js](file:///c:/Users/aksha/Downloads/drive-download-20260227T181945Z-1-001/frontend/src/nodes/apiNode.js) | `apiCall` | `url`, `body` | `response`, `error` | method select |
+| [noteNode.js](file:///c:/Users/aksha/Downloads/drive-download-20260227T181945Z-1-001/frontend/src/nodes/noteNode.js) | `note` | — | — | content textarea |
+| [transformNode.js](file:///c:/Users/aksha/Downloads/drive-download-20260227T181945Z-1-001/frontend/src/nodes/transformNode.js) | `transform` | `input` | `output` | expression textarea |
+| [mathNode.js](file:///c:/Users/aksha/Downloads/drive-download-20260227T181945Z-1-001/frontend/src/nodes/mathNode.js) | `math` | `a`, `b` | `result` | operation select |
+
+### Other Files Updated
+| File | Change |
+|------|--------|
+| [toolbar.js](file:///c:/Users/aksha/Downloads/drive-download-20260227T181945Z-1-001/frontend/src/toolbar.js) | Rebuilt as data-driven `PALETTE` array — all 9 nodes, one entry each |
+| [draggableNode.js](file:///c:/Users/aksha/Downloads/drive-download-20260227T181945Z-1-001/frontend/src/draggableNode.js) | Color dot indicator, hover scale, drag opacity feedback |
+| [ui.js](file:///c:/Users/aksha/Downloads/drive-download-20260227T181945Z-1-001/frontend/src/ui.js) | All 9 types registered, color-coded MiniMap, `snapToGrid`, `fitView` |
+| [App.js](file:///c:/Users/aksha/Downloads/drive-download-20260227T181945Z-1-001/frontend/src/App.js) | Proper sidebar + canvas + footer layout, Inter font, full viewport |
+
+### Architecture Proof
+> Adding 1 of the 5 new nodes required: **7 lines of code + 1 config entry**
+> The other 4 were identical effort. This is exactly what scalability looks like.
+
+---
+*Part 4 — Backend + Submit is next.*
